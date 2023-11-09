@@ -55,7 +55,7 @@ public class GameEngine implements Observer {
 		
 		createGame();  //PORQUE É QUE NAO PRECISO DE UM GUI.UPDATE()????
 
-		gui.setStatusMessage("Sokoban Starter - demo");
+		gui.setStatusMessage("Este é o meu ultra sokoban game hehe");
 	}
 	
 	@Override
