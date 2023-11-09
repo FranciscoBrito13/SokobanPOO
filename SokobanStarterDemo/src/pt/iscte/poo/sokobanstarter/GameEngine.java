@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,12 +23,12 @@ public class GameEngine implements Observer {
 
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-	private int level = 1;
+
+	private int level = 2;
 	private List<ImageTile> tileList;	// Lista de imagens
 	private Empilhadora bobcat = null;	        // Referencia para a empilhadora
+	private HashMap<Point2D, GameElement> tileMap;
 
-	
-	
 	
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
@@ -40,6 +41,7 @@ public class GameEngine implements Observer {
 
 		
 		tileList = new ArrayList<>();   
+		tileMap = new HashMap<Point2D, GameElement>();
 		
 	}
 
@@ -55,24 +57,38 @@ public class GameEngine implements Observer {
 		
 		createGame();  //PORQUE É QUE NAO PRECISO DE UM GUI.UPDATE()????
 
-		gui.setStatusMessage("Este é o meu ultra sokoban game hehe, a ines esta me a ensinar a usar git");
+		gui.setStatusMessage("Nivel" + level);
 	}
+	public boolean canMoveTo(int key){ //PERGUNTAR AO STOR SE PODE SER AQUI
+		Point2D point = bobcat.getPosition();
+		Direction dir = Direction.directionFor(key); 
+		Point2D newPoint = point.plus(dir.asVector());
+		if(tileMap.get(newPoint) instanceof Parede){
+			bobcat.changeDirection(key);
+			return false;
+		} 
+		return true;
+	} 
+	
 	
 	@Override
 	public void update(Observed source) {
 		int key = gui.keyPressed();
 
 		//Se o jogador carregou numa das teclas direcionais
-		if(Direction.isDirection(key)){
+		if(Direction.isDirection(key) && canMoveTo(key)){
 			bobcat.move(key);
-			System.out.println("OLA");
+
 		}
 		//Se o jogador carregou na tecla R
 		else if (key==KeyEvent.VK_R)
 			restartLevel();
-		gui.update();
+		
+		gui.update();  //Update na GUI sempre que se move
 	}
 	
+	
+	//Cria o jogo tendo em conta o atribuo
 	public void createGame() {
 	    try {
 	        Scanner s = new Scanner(new File("levels/level" + level + ".txt"));
@@ -87,23 +103,30 @@ public class GameEngine implements Observer {
 
 	                switch (ch) {
 	                    case '#':
+	                    	tileMap.put(ponto, new Parede(ponto));
 	                        tileList.add(new Parede(ponto));
 	                        break;
 	                    case 'E':
+	                    	tileMap.put(ponto, new Chao(ponto));
 	                    	tileList.add(new Chao(ponto));
 	                        bobcat = new Empilhadora(ponto);
+	                    	tileMap.put(ponto, bobcat);
 	                        tileList.add(bobcat);
 	                        break;
 	                    case 'C':
+	                    	tileMap.put(ponto, new Caixote(ponto));
 	                        tileList.add(new Caixote(ponto));
 	                        break;
 	                    case '=':
+	                    	tileMap.put(ponto, new Vazio(ponto));
 	                        tileList.add(new Vazio(ponto));
 	                        break;
 	                    case 'B':
+	                    	tileMap.put(ponto, new Bateria(ponto));
 	                        tileList.add(new Bateria(ponto));
 	                        break;
 	                    default:
+	                    	tileMap.put(ponto, new Chao(ponto));
 	                        tileList.add(new Chao(ponto));
 	                        break;
 	                }
@@ -133,5 +156,11 @@ public class GameEngine implements Observer {
 
 	private void sendImagesToGUI() {
 		gui.addImages(tileList);
+	}
+	
+
+	// Getter do tileMap
+	public HashMap<Point2D, GameElement> getTileMap() {
+		return tileMap;
 	}
 }

@@ -45,11 +45,12 @@ public class Empilhadora extends GameElement implements Movable{
 		}
 	}
 
+	
 	public void move(int keyCode) {
 			Direction dir = Direction.directionFor(keyCode);
 			changeDirection(keyCode);
 			Point2D newPosition = super.getPosition().plus(dir.asVector());
-			if (canMoveTo(newPosition) ) {
+			if (doesntPassBorder(newPosition) ) {
 				setPosition(newPosition);
 			}
 	}
