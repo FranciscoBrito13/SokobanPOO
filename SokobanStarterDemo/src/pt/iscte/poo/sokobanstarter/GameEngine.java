@@ -65,7 +65,7 @@ public class GameEngine implements Observer {
 		//Se o jogador carregou numa das teclas direcionais
 		if(Direction.isDirection(key)){
 			bobcat.move(key);
-			System.out.println(bobcat.getPosition());
+			System.out.println("OLA");
 		}
 		//Se o jogador carregou na tecla R
 		else if (key==KeyEvent.VK_R)
