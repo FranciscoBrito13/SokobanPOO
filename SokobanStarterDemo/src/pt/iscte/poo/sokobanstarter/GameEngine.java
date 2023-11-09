@@ -24,7 +24,7 @@ public class GameEngine implements Observer {
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
 
-	private int level = 2;
+	private int level = 3;
 	private List<ImageTile> tileList;	// Lista de imagens
 	private Empilhadora bobcat = null;	        // Referencia para a empilhadora
 	private HashMap<Point2D, GameElement> tileMap;
