@@ -6,148 +6,130 @@ import java.util.HashMap;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora extends GameElement implements Movable{
-	
-	private Bateria_Empilhadora bateria = new Bateria_Empilhadora(50);
-	
-	private String imageName = "Empilhadora_D";
+public class Empilhadora extends GameElement implements Movable {
 
-	public Empilhadora(Point2D initialPosition){
-		super(initialPosition);
-	}
-	
-	@Override
-	public String getName() {
-		return imageName;
-	}
+    private static Empilhadora INSTANCE; //Instancia da empilhadora
+    private Bateria_Empilhadora bateria = new Bateria_Empilhadora(100);
+    private String imageName = "Empilhadora_U";
+    private Point2D initialPosition;
+    private int moves;
 
-	@Override
-	public int getLayer() {
-		return 1;
-	}
-	
-	public void changeDirection(int lastKeyPressed) {
-		switch (lastKeyPressed) {
-		case KeyEvent.VK_UP:
-			imageName = "Empilhadora_U";
-			break;
-		case KeyEvent.VK_DOWN:
-			imageName = "Empilhadora_D";
-			break;
-		case KeyEvent.VK_LEFT:
-			imageName = "Empilhadora_L";
-			break;
-		case KeyEvent.VK_RIGHT:
-			imageName = "Empilhadora_R";
-			break;
-			
-		}
-	}
+    private Empilhadora(Point2D position) {
+        super(position);
+        initialPosition = position;
+    }
 
-	
-	public void move(int keyCode, HashMap<Point2D, GameElement> tileMap) {
+    public static Empilhadora getInstance(Point2D initialPosition) {
+        if (INSTANCE == null)
+            INSTANCE = new Empilhadora(initialPosition);
+        return INSTANCE;
+    }
+
+    public void changeDirection(int lastKeyPressed) {
+        switch (lastKeyPressed) {
+            case KeyEvent.VK_UP:
+                imageName = "Empilhadora_U";
+                break;
+            case KeyEvent.VK_DOWN:
+                imageName = "Empilhadora_D";
+                break;
+            case KeyEvent.VK_LEFT:
+                imageName = "Empilhadora_L";
+                break;
+            case KeyEvent.VK_RIGHT:
+                imageName = "Empilhadora_R";
+                break;
+        }
+    }
+
+    public void move(int keyCode, HashMap<Point2D, GameElement> tileMap) {
+        Point2D newPosition = getNewPointFromKey(keyCode);
+        
+        if (tileMap.get(newPosition) instanceof Caixote) {
+            return;
+        }
+        setPosition(newPosition);
+        decBateria();
+        moves++;
+    }
+    
+
+
+    public boolean MovingToWall(int key, HashMap<Point2D, GameElement> tileMap) {
+        GameElement elementAtNewPoint = tileMap.get(getNewPointFromKey(key));
+        changeDirection(key); //Faz um changeDirection para qualquer movimento
+        return elementAtNewPoint instanceof Parede;
+    }
+
+    public boolean movingToBoxValid(int key, HashMap<Point2D, GameElement> tileMap) {
+        Point2D point = getPosition();
+        Direction dir = Direction.directionFor(key);
+        Point2D newPoint = point.plus(dir.asVector()); 
+        Point2D newBoxPoint = newPoint.plus(dir.asVector());
+
+        GameElement elementAtNewPoint = tileMap.get(newPoint);
+
+        if (elementAtNewPoint instanceof Caixote) {
+            Caixote c = (Caixote) elementAtNewPoint;
+            return c.isPushPositionValid(newBoxPoint, tileMap);
+        }
+        return false;
+    }
+
+    public boolean movingToBattery(int key, HashMap<Point2D, GameElement> tileMap) {
+        return tileMap.get(getNewPointFromKey(key)) instanceof Bateria;
+    }
+    
+    public void resetEmpilhadora(){
+    	bateria.resetBattery();
+    	setPosition(initialPosition);
+    	imageName = "Empilhadora_U";
+    	moves = 0;
+    }
+    
+    private Point2D getNewPointFromKey(int key){
+        Point2D point = getPosition();
+        Direction dir = Direction.directionFor(key);
+        Point2D newPoint = point.plus(dir.asVector());
+        return newPoint;
+    }
+
+    
+    public void setInitialPosition(Point2D position){
+    	initialPosition = position;
+    }
+
+    public int getBateria() {
+        return bateria.getBateria();
+    }
+
+    public void decBateria() {
+        bateria.bobcatMoved();
+    }
+
+    public void addBattery(int batteryAmount) {
+        setBateria(getBateria() + batteryAmount);
+    }
+
+    private void setBateria(int batteryAmount) {
+        bateria.add(batteryAmount);
+    }
+
+    public void consumeBattery(Bateria b) {
+        bateria.add(b.getBattery());
+    }
+
+	public int getMoves() {
 		
-		//Confirma se a bateria está acima de 0, se estiver move e decrementa, se não dá erro
-		Direction dir = Direction.directionFor(keyCode);
-		Point2D newPosition = super.getPosition().plus(dir.asVector());
-		if(tileMap.get(newPosition) instanceof Caixote){
-			return;
-		}
-		setPosition(newPosition); 
-		decBateria();
+		return moves;
 	}
+    @Override
+    public String getName() {
+        return imageName;
+    }
 
-	public Direction getDirection() {
-	    switch (imageName) {
-	        case "Empilhadora_D":
-	            return Direction.DOWN;
-	        case "Empilhadora_U":
-	            return Direction.UP;
-	        case "Empilhadora_L":
-	            return Direction.LEFT;
-	        case "Empilhadora_R":
-	            return Direction.RIGHT;
-	        default:
-	            throw new IllegalArgumentException("Invalid imageName: " + imageName);
-	    }
-	}
-	
-	public boolean MovingToWall(int key, HashMap<Point2D, GameElement> tileMap) {
-	    Point2D point = getPosition();
-	    Direction dir = Direction.directionFor(key);
-	    Point2D newPoint = point.plus(dir.asVector());
-
-	    GameElement elementAtNewPoint = tileMap.get(newPoint);
-	    
-	    changeDirection(key);
-	    
-	    // Check if the new position is blocked by a Wall
-	    if (elementAtNewPoint instanceof Parede){ 
-
-	        return true;
-		   
-	    }
-	    return false;
-	}
-	
-
-	public boolean movingToBoxValid(int key, HashMap<Point2D, GameElement> tileMap) {
-	    Point2D point = getPosition();
-	    Direction dir = Direction.directionFor(key);
-	    Point2D newPoint = point.plus(dir.asVector());
-	    Point2D newBoxPoint = newPoint.plus(dir.asVector());
-	    
-	    
-	    GameElement elementAtNewPoint = tileMap.get(newPoint);
-	    
-	    changeDirection(key);
-	    
-	    if (elementAtNewPoint instanceof Caixote){
-	    	Caixote c = (Caixote) elementAtNewPoint;
-	    	if(c.isPushPositionValid(newBoxPoint, tileMap)){
-	    		return true;	    	
-	    	}
-		    
-	    }
-
-	    return false;
-	}
-	
-	public boolean movingToBattery(int key, HashMap<Point2D, GameElement> tileMap){
-	    Point2D point = getPosition();
-	    Direction dir = Direction.directionFor(key);
-	    Point2D newPoint = point.plus(dir.asVector());
-	    
-	    GameElement elementAtNewPoint = tileMap.get(newPoint);
-	    
-	    if (elementAtNewPoint instanceof Bateria){
-	    	return true;
-		    
-	    }
-
-	    return false;
-	}
-	
-
-	public int getBateria() {
-		return bateria.getBateria();
-	}
-	public void decBateria(){
-		bateria.bobcatMoved();
-	}
-
-	public void addBattery(int batteryAmount) {
-		setBateria(getBateria() + batteryAmount);
-		
-	}
-
-	private void setBateria(int batteryAmount) {
-		bateria.add(batteryAmount);
-		
-	}
-	
-	public void consumeBattery(Bateria b){
-		bateria.add(b.getBattery());
-	}
-
+    @Override
+    public int getLayer() {
+        return 1;
+    }
 }

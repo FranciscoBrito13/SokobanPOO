@@ -41,7 +41,7 @@ public class Caixote extends GameElement implements Pushable{
     	
         GameElement elementAtNewPosition = tileMap.get(position);
 
-        return elementAtNewPosition == null || elementAtNewPosition instanceof Bateria || elementAtNewPosition instanceof Empilhadora;
+        return elementAtNewPosition == null || elementAtNewPosition instanceof Bateria || elementAtNewPosition instanceof Empilhadora || elementAtNewPosition instanceof Alvo;
     }
 	
 

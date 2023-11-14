@@ -2,8 +2,6 @@ package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.utils.*;
 
-import java.util.HashMap;
-
 import pt.iscte.poo.gui.ImageTile;
 
 
