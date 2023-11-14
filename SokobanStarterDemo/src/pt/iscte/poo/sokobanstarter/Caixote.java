@@ -36,6 +36,7 @@ public class Caixote extends GameElement implements Pushable{
 	    tileMap.remove(oldPosition); // Clear the old position
 	    tileMap.put(newPosition, this); // Update the tileMap with the existing Caixote in the new position
 	}
+    
     @Override
     public boolean isPushPositionValid(Point2D position, HashMap<Point2D, GameElement> tileMap) {
     	

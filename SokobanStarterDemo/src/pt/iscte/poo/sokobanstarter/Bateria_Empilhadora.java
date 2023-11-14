@@ -15,11 +15,6 @@ public class Bateria_Empilhadora {
 		bateria--;
 	}
 	
-//	private void setBattery(int bateria){
-//		this.bateria = bateria;
-//	}
-
-	
 	public void add(int bateria){
 		this.bateria += bateria;
 	}

@@ -40,6 +40,8 @@ public abstract class GameElement implements ImageTile{
 	public void setLayer(int x){
 		this.layer = x;
 	}
+	
+	//public abstract void interact();
 	//Verifica se a posicao dada se encontra dentro da grelha de jogo NAO É NECESSÁRIO
 //	public boolean doesntPassBorder(Point2D p) {
 //		if (p.getX() < 0) return false;
