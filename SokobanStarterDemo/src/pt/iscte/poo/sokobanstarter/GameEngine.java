@@ -23,9 +23,10 @@ public class GameEngine implements Observer {
 
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-
-	private int level = 5;
-	private List<ImageTile> tileList;	
+	
+	private int previousQntAlvosAtivos = 0;
+	private int level = 0;
+	//private List<ImageTile> tileList;	
 	private Empilhadora bobcat = null;	  
 	private HashMap<Point2D, GameElement> tileMap; //COLOCAR APENAS OS OBJETOS IMPORTANTES NO HASH
 	
@@ -39,7 +40,7 @@ public class GameEngine implements Observer {
 		gui.go();                              // 4. lancar a GUI
 
 		
-		tileList = new ArrayList<>();   
+		//tileList = new ArrayList<>();   
 		tileMap = new HashMap<Point2D, GameElement>();
 		
 	}
@@ -59,7 +60,7 @@ public class GameEngine implements Observer {
 		gui.setStatusMessage("Nivel:" + level + " Bateria:" + bobcat.getBateria());
 
 	}
-
+	
 	
 	@Override
 	public void update(Observed source) {
@@ -67,26 +68,8 @@ public class GameEngine implements Observer {
 
 	    // Verifica se o bobcat não tem uma parede naquela posição
 	    if (Direction.isDirection(key) && !(bobcat.MovingToWall(key, tileMap))) {
-	        Direction directionFromKey = Direction.directionFor(key);
-
-	        if (bobcat.movingToBoxValid(key, tileMap)) {
-	            Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
-	            c.push(directionFromKey, tileMap);
-	        }
-	        if (bobcat.movingToBattery(key, tileMap)) {
-	            Point2D batteryPosition = bobcat.getPosition().plus(directionFromKey.asVector());
-	            Bateria battery = (Bateria) tileMap.get(batteryPosition);
-
-	            bobcat.consumeBattery(battery);
-	   
-	            tileMap.remove(batteryPosition);
-	            
-	  
-
-	            
-	        }
-	        bobcat.move(key, tileMap);
-	        
+	    	
+	    	interactWithObjects(key, tileMap);
 	        
 	        if (isGameOver()) {
 	        	displayGameOverPanel();
@@ -95,8 +78,7 @@ public class GameEngine implements Observer {
 	        
 	        
 	        if(boxInPlace()){
-	        	level++;
-	        	restartLevel();
+	        	startAnotherLevel();
 	        }
 	        
 	    }
@@ -104,27 +86,62 @@ public class GameEngine implements Observer {
 	    // O jogo é resetado ao carregar na tecla R
 	    else if (key == KeyEvent.VK_R) {
 	        restartLevel();
+	        
+	        
+	    } else if(key == KeyEvent.VK_N){
+	    	startAnotherLevel();
 	    }
 
-	    gui.setStatusMessage("Nivel:" + level + " Bateria:" + bobcat.getBateria());
+	    gui.setStatusMessage("Level: " + level + " Energy:" + bobcat.getBateria() + " Moves: " + bobcat.getMoves());
 	    gui.update(); // Update the GUI after the movement
 	}
 
-	private boolean boxInPlace() {
-		
-		return false;
-	}
+    private boolean boxInPlace() {
+        List<Alvo> alvos = new ArrayList<>();
+        List<Caixote> caixotes = new ArrayList<>();
 
+        for (GameElement ge : tileMap.values()) {
+            if (ge instanceof Alvo) {
+                alvos.add((Alvo) ge);
+            } else if (ge instanceof Caixote) {
+                caixotes.add((Caixote) ge);
+            }
+        }
+
+        int qntAlvosAtivos = 0;
+
+        for (Alvo a : alvos) {
+            boolean isTargetActive = false;
+            for (Caixote c : caixotes) {
+                if (c.getPosition().equals(a.getPosition())) {
+                    isTargetActive = true;
+                    break;
+                }
+            }
+            if (isTargetActive) {
+                qntAlvosAtivos++;
+            }
+        }
+
+        // Handle the scenario where a Caixote leaves an Alvo
+        if (previousQntAlvosAtivos > qntAlvosAtivos) {
+            // Decrement the count of active targets
+            System.out.println("A Caixote left an Alvo");
+        }
+
+        previousQntAlvosAtivos = qntAlvosAtivos;
+
+        return alvos.size() == qntAlvosAtivos;
+    }
 
 	private void displayGameOverPanel() {
-
-		
+		System.out.println("Ainda nao estou implementado");
 	}
 	
-	
-	//Cria o jogo tendo em conta o atribuo
 	public void createGame() {
+		
 	    try {
+	    	List<ImageTile> tileList = new ArrayList<>();
 	        Scanner s = new Scanner(new File("levels/level" + level + ".txt"));
 	        int y = 0;
 
@@ -141,9 +158,9 @@ public class GameEngine implements Observer {
 	                        tileList.add(new Parede(ponto));
 	                        break;
 	                    case 'E':
-	                    	//tileMap.put(ponto, new Chao(ponto));
 	                    	tileList.add(new Chao(ponto));
-	                        bobcat = new Empilhadora(ponto);
+	                        bobcat = Empilhadora.getInstance(ponto);
+	                        bobcat.setInitialPosition(ponto);
 	                    	tileMap.put(ponto, bobcat);
 	                        tileList.add(bobcat);
 	                        break;
@@ -151,59 +168,77 @@ public class GameEngine implements Observer {
 	                    	Caixote caixote = new Caixote(ponto);
 	                        tileMap.put(ponto, caixote);
 	                        tileList.add(caixote);
-	                        //tileMap.put(ponto, new Chao(ponto));
 	                        tileList.add(new Chao(ponto));
 	                        
 	                        break;
 	                    case '=':
-	                    	//tileMap.put(ponto, new Vazio(ponto));
 	                        tileList.add(new Vazio(ponto));
 	                        break;
 	                    case 'B':
-	                    	tileMap.put(ponto, new Bateria(ponto));
-	                        tileList.add(new Bateria(ponto));
+	                    	Bateria b = new Bateria(ponto);
+	                    	tileMap.put(ponto, b);
+	                        tileList.add(b);
 	                        break;
+	                    case 'X':
+	                    	Alvo a = new Alvo(ponto);
+	                    	tileMap.put(ponto, a);
+	                        tileList.add(a);
 	                    default:
-	                    	//tileMap.put(ponto, new Chao(ponto));
+
 	                        tileList.add(new Chao(ponto));
 	                        break;
 	                }
 	            }
 	            y++;
+	            
 	        }
-	        //sendImagesToGUI();
+	        gui.addImages(tileList);
 	    } catch (FileNotFoundException e) {
 	        e.printStackTrace();
 	    }
-		sendImagesToGUI();
 	}
 	
 	public boolean isGameOver(){
-		if(bobcat.getBateria() <= 0){
-			return true;
-		}
-		
-		return false;
-		
+		return bobcat.getBateria() <= 0;
 	}
 	
-
 	public void startAnotherLevel() {
-	    tileList.clear();
+		level++;
 	    tileMap.clear();
 	    gui.clearImages();
-	    bobcat = null;
 	    createGame(); 
+	    bobcat.resetEmpilhadora();
 	}
 
 	public void restartLevel() {
-	    startAnotherLevel();
+	    tileMap.clear();
+	    gui.clearImages();
+	    createGame();
+	    bobcat.resetEmpilhadora();
 	    gui.update();
 	}
 
-	private void sendImagesToGUI() {
-		gui.addImages(tileList);
+	private void interactWithObjects(int key, HashMap<Point2D, GameElement> tileMap){
+        Direction directionFromKey = Direction.directionFor(key);
+
+        if (bobcat.movingToBoxValid(key, tileMap)) {
+            Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
+            c.push(directionFromKey, tileMap);
+        }
+        if (bobcat.movingToBattery(key, tileMap)) {
+            Point2D batteryPosition = bobcat.getPosition().plus(directionFromKey.asVector());
+            Bateria battery = (Bateria) tileMap.get(batteryPosition);
+
+            bobcat.consumeBattery(battery);
+            gui.removeImage((Bateria) tileMap.get(batteryPosition));
+            tileMap.remove(batteryPosition);
+            gui.addImage(new Chao(batteryPosition));
+        }
+        
+        
+        bobcat.move(key, tileMap);
 	}
+	
 	
 
 }

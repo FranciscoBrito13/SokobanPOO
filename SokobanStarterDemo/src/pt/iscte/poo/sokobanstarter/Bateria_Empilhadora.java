@@ -2,18 +2,22 @@ package pt.iscte.poo.sokobanstarter;
 
 public class Bateria_Empilhadora {
 	
+	private int initialBattery;
 	private int bateria;
 	
-	private GameEngine INSTANCE;
 	
 	public Bateria_Empilhadora(int bateria) {
 		this.bateria = bateria;
-		INSTANCE = GameEngine.getInstance();
+		initialBattery = bateria;
 	}
 	
 	public void bobcatMoved(){
 		bateria--;
 	}
+	
+//	private void setBattery(int bateria){
+//		this.bateria = bateria;
+//	}
 
 	
 	public void add(int bateria){
@@ -22,6 +26,10 @@ public class Bateria_Empilhadora {
 	
 	public int getBateria(){
 		return bateria;
+	}
+	
+	public void resetBattery(){
+		bateria = initialBattery;
 	}
 	
 }
