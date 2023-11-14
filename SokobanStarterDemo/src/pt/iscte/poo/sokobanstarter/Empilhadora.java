@@ -42,8 +42,9 @@ public class Empilhadora extends GameElement implements Movable {
         }
     }
 
-    public void move(int keyCode, HashMap<Point2D, GameElement> tileMap) {
-        Point2D newPosition = getNewPointFromKey(keyCode);
+    public void move(Direction dir, HashMap<Point2D, GameElement> tileMap) {
+        //Point2D newPosition = getNewPointFromKey(keyCode);
+    	Point2D newPosition = getPosition().plus(dir.asVector());
         
         if (tileMap.get(newPosition) instanceof Caixote) {
             return;

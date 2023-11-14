@@ -23,8 +23,7 @@ public class GameEngine implements Observer {
 
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-	
-	private int previousQntAlvosAtivos = 0;
+    List<Alvo> alvos;
 	private int level = 0;
 	//private List<ImageTile> tileList;	
 	private Empilhadora bobcat = null;	  
@@ -96,14 +95,11 @@ public class GameEngine implements Observer {
 	    gui.update(); // Update the GUI after the movement
 	}
 
-    private boolean boxInPlace() {
-        List<Alvo> alvos = new ArrayList<>();
+    private boolean boxInPlace() { 
         List<Caixote> caixotes = new ArrayList<>();
 
-        for (GameElement ge : tileMap.values()) {
-            if (ge instanceof Alvo) {
-                alvos.add((Alvo) ge);
-            } else if (ge instanceof Caixote) {
+        for (GameElement ge : tileMap.values()) {//Fazer filtro x2
+        	if (ge instanceof Caixote) {
                 caixotes.add((Caixote) ge);
             }
         }
@@ -122,21 +118,16 @@ public class GameEngine implements Observer {
                 qntAlvosAtivos++;
             }
         }
-
-        // Handle the scenario where a Caixote leaves an Alvo
-        if (previousQntAlvosAtivos > qntAlvosAtivos) {
-            // Decrement the count of active targets
-            System.out.println("A Caixote left an Alvo");
-        }
-
-        previousQntAlvosAtivos = qntAlvosAtivos;
-
+        
+        System.out.println(alvos.size() + "  " + qntAlvosAtivos);
         return alvos.size() == qntAlvosAtivos;
     }
 
 	private void displayGameOverPanel() {
 		System.out.println("Ainda nao estou implementado");
 	}
+	
+
 	
 	public void createGame() {
 		
@@ -192,6 +183,7 @@ public class GameEngine implements Observer {
 	            y++;
 	            
 	        }
+	        alvos = loadAlvos();
 	        gui.addImages(tileList);
 	    } catch (FileNotFoundException e) {
 	        e.printStackTrace();
@@ -218,27 +210,49 @@ public class GameEngine implements Observer {
 	    gui.update();
 	}
 
-	private void interactWithObjects(int key, HashMap<Point2D, GameElement> tileMap){
-        Direction directionFromKey = Direction.directionFor(key);
+	private void interactWithObjects(int key, HashMap<Point2D, GameElement> tileMap) {
+	    Direction directionFromKey = Direction.directionFor(key);
 
-        if (bobcat.movingToBoxValid(key, tileMap)) {
-            Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
-            c.push(directionFromKey, tileMap);
-        }
-        if (bobcat.movingToBattery(key, tileMap)) {
-            Point2D batteryPosition = bobcat.getPosition().plus(directionFromKey.asVector());
-            Bateria battery = (Bateria) tileMap.get(batteryPosition);
+	    if (bobcat.movingToBoxValid(key, tileMap)) {
+	        Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
+	        c.push(directionFromKey, tileMap);
+	    }
+	    
+	    //addTargetIfNull(alvos); 
 
-            bobcat.consumeBattery(battery);
-            gui.removeImage((Bateria) tileMap.get(batteryPosition));
-            tileMap.remove(batteryPosition);
-            gui.addImage(new Chao(batteryPosition));
-        }
-        
-        
-        bobcat.move(key, tileMap);
+	    if (bobcat.movingToBattery(key, tileMap)) {
+	        Point2D batteryPosition = bobcat.getPosition().plus(directionFromKey.asVector());
+	        Bateria battery = (Bateria) tileMap.get(batteryPosition);
+
+	        bobcat.consumeBattery(battery);
+	        gui.removeImage((Bateria) tileMap.get(batteryPosition));
+	        tileMap.remove(batteryPosition);
+	        gui.addImage(new Chao(batteryPosition));
+	    }
+
+	    bobcat.move(directionFromKey, tileMap);
 	}
 	
+//	private void addTargetIfNull(List<Alvo> alvos) {
+//	    for (Alvo a : alvos) {
+//	        Point2D targetPosition = a.getPosition();
+//	        if (!(tileMap.get(targetPosition) instanceof Alvo || tileMap.get(targetPosition) instanceof Caixote)) {
+//	            tileMap.put(targetPosition, new Alvo(targetPosition));
+//	            System.out.println("Add um alvo");
+//	        }
+//	    }
+//	}
+	
+	private List<Alvo> loadAlvos() {
+	    List<Alvo> alvos = new ArrayList<>();
+	    for (GameElement ge : tileMap.values()) {
+	        if (ge instanceof Alvo) {
+	            alvos.add((Alvo) ge);
+	        }
+	    }
+	    return alvos;
+	}
+
 	
 
 }
