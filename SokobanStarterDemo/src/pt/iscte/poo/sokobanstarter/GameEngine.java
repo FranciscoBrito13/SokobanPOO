@@ -78,7 +78,11 @@ public class GameEngine implements Observer {
 	            Bateria battery = (Bateria) tileMap.get(batteryPosition);
 
 	            bobcat.consumeBattery(battery);
+	   
+	            tileMap.remove(batteryPosition);
 	            
+	  
+
 	            
 	        }
 	        bobcat.move(key, tileMap);

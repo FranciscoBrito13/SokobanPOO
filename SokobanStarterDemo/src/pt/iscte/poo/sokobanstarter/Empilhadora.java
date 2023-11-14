@@ -120,10 +120,7 @@ public class Empilhadora extends GameElement implements Movable{
 	    
 	    GameElement elementAtNewPoint = tileMap.get(newPoint);
 	    
-	    changeDirection(key);
-	    
 	    if (elementAtNewPoint instanceof Bateria){
-	    	elementAtNewPoint.setPosition(new Point2D(-1, -1));
 	    	return true;
 		    
 	    }
