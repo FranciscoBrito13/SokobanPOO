@@ -2,6 +2,8 @@ package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.utils.*;
 
+import java.util.HashMap;
+
 import pt.iscte.poo.gui.ImageTile;
 
 
@@ -40,6 +42,8 @@ public abstract class GameElement implements ImageTile{
 	public void setLayer(int x){
 		this.layer = x;
 	}
+	
+	public void interact(GameElement other) {} ;
 	
 	//public abstract void interact();
 	//Verifica se a posicao dada se encontra dentro da grelha de jogo NAO É NECESSÁRIO

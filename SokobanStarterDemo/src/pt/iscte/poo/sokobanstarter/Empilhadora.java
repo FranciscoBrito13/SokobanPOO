@@ -72,7 +72,7 @@ public class Empilhadora extends GameElement implements Movable {
 
         if (elementAtNewPoint instanceof Caixote) {
             Caixote c = (Caixote) elementAtNewPoint;
-            return c.isPushPositionValid(newBoxPoint, tileMap);
+            return c.isPositionValid(newBoxPoint, tileMap);
         }
         return false;
     }

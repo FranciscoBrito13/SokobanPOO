@@ -5,7 +5,7 @@ import java.util.HashMap;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Caixote extends GameElement implements Pushable{
+public class Caixote extends GameElement implements Movable{
 
 	
 	public Caixote(Point2D position){
@@ -28,7 +28,7 @@ public class Caixote extends GameElement implements Pushable{
     }
 
     @Override
-	public void push(Direction dir, HashMap<Point2D, GameElement> tileMap) {
+	public void move(Direction dir, HashMap<Point2D, GameElement> tileMap) {
 	    Point2D oldPosition = super.getPosition();
 	    Point2D newPosition = super.getPosition().plus(dir.asVector());
 
@@ -38,7 +38,7 @@ public class Caixote extends GameElement implements Pushable{
 	}
     
     @Override
-    public boolean isPushPositionValid(Point2D position, HashMap<Point2D, GameElement> tileMap) {
+    public boolean isPositionValid(Point2D position, HashMap<Point2D, GameElement> tileMap) {
     	
         GameElement elementAtNewPosition = tileMap.get(position);
 

@@ -215,7 +215,7 @@ public class GameEngine implements Observer {
 
 	    if (bobcat.movingToBoxValid(key, tileMap)) {
 	        Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
-	        c.push(directionFromKey, tileMap);
+	        c.move(directionFromKey, tileMap);
 	    }
 	    
 	    //addTargetIfNull(alvos); 

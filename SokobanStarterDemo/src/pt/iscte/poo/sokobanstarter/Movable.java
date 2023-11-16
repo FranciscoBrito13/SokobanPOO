@@ -11,5 +11,7 @@ public interface Movable {
 	//Procedimento que implementa o movimento dos objetos que implementam esta interface
 	public void move(Direction dir, HashMap<Point2D, GameElement> tileMap);
 	
+	public default boolean isPositionValid(Point2D position, HashMap<Point2D, GameElement> tileMap) {return true;};
+	
 
 }
