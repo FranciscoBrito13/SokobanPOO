@@ -1,5 +1,6 @@
 package pt.iscte.poo.sokobanstarter;
 
+import pt.iscte.poo.gui.ImageMatrixGUI;
 import pt.iscte.poo.utils.Point2D;
 
 public class Bateria extends GameElement{
@@ -27,6 +28,15 @@ public class Bateria extends GameElement{
 	public int getBattery(){
 		return batteryAmount;
 
+	}
+	
+	@Override
+	public boolean interact(GameElement e) {
+		Empilhadora.INSTANCE.consumeBattery(this);
+		ImageMatrixGUI.getInstance().removeImage(this);
+		GameEngine.getInstance().removeElement(getPosition());
+		ImageMatrixGUI.getInstance().addImage(new Chao(getPosition()));
+		return true;
 	}
 
 }

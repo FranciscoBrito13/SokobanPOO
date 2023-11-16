@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
+import pt.iscte.poo.utils.Vector2D;
 
 public class Caixote extends GameElement implements Movable{
 
@@ -28,27 +29,27 @@ public class Caixote extends GameElement implements Movable{
     }
 
     @Override
-	public void move(Direction dir, HashMap<Point2D, GameElement> tileMap) {
-	    Point2D oldPosition = super.getPosition();
-	    Point2D newPosition = super.getPosition().plus(dir.asVector());
-
-	    setPosition(newPosition);
-	    tileMap.remove(oldPosition); // Clear the old position
-	    tileMap.put(newPosition, this); // Update the tileMap with the existing Caixote in the new position
+	public void move(Point2D p) {
+	    Point2D oldPosition = getPosition();
+	    setPosition(p);
+	    GameEngine.getInstance().relocateObject(oldPosition, p, this);
 	}
     
     @Override
     public boolean isPositionValid(Point2D position, HashMap<Point2D, GameElement> tileMap) {
-    	
         GameElement elementAtNewPosition = tileMap.get(position);
-
         return elementAtNewPosition == null || elementAtNewPosition instanceof Bateria || elementAtNewPosition instanceof Empilhadora || elementAtNewPosition instanceof Alvo;
     }
 	
     @Override
-    public void interact() {
-    	Point2D pe = Empilhadora.INSTANCE.getPosition();
-    	Point2D p = getPosition();
+    public boolean interact(GameElement other) {
+    	Vector2D move = Vector2D.movementVector(other.getPosition(), getPosition());
+    	Point2D p = getPosition().plus(move);
+    	if(GameEngine.getInstance().getGameElement(p) == null){
+    		move(p);
+    		return true;
+    	}
+    	return false;
     	
     	
     }

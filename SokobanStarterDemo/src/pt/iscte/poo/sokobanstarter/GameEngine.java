@@ -64,23 +64,30 @@ public class GameEngine implements Observer {
 	@Override
 	public void update(Observed source) {
 	    int key = gui.keyPressed();
-
+	    Direction d = Direction.directionFor(key);
+	    
+	    if(d == null)return;
+	    
 	    // Verifica se o bobcat não tem uma parede naquela posição
-	    if (Direction.isDirection(key) && !(bobcat.MovingToWall(key, tileMap))) {
-	    	
-	    	interactWithObjects(key, tileMap);
-	        
-	        if (isGameOver()) {
-	        	displayGameOverPanel();
-	        	restartLevel();
-	        }
-	        
-	        
-	        if(boxInPlace()){
-	        	startAnotherLevel();
-	        }
-	        
+	    Point2D nextP = bobcat.getPosition().plus(d.asVector());
+	    GameElement g = getGameElement(nextP);
+	    boolean canMove = g == null ? true :  g.interact(bobcat);
+	    //interactWithObjects(key);
+	    if(canMove)bobcat.move(nextP);
+	    bobcat.changeDirection(key);
+	    
+	    
+	    if (isGameOver()) {
+	        displayGameOverPanel();
+	        restartLevel();
 	    }
+	        
+	        
+	    if(boxInPlace()){
+	    	startAnotherLevel();
+	    }
+	        
+	    
 
 	    // O jogo é resetado ao carregar na tecla R
 	    else if (key == KeyEvent.VK_R) {
@@ -210,39 +217,13 @@ public class GameEngine implements Observer {
 	    gui.update();
 	}
 
-	private void interactWithObjects(int key, HashMap<Point2D, GameElement> tileMap) {
-	    Direction directionFromKey = Direction.directionFor(key);
-
-	    if (bobcat.movingToBoxValid(key, tileMap)) {
-	        Caixote c = (Caixote) tileMap.get(bobcat.getPosition().plus(directionFromKey.asVector()));
-	        c.move(directionFromKey, tileMap);
-	    }
-	    
-	    //addTargetIfNull(alvos); 
-
-	    if (bobcat.movingToBattery(key, tileMap)) {
-	        Point2D batteryPosition = bobcat.getPosition().plus(directionFromKey.asVector());
-	        Bateria battery = (Bateria) tileMap.get(batteryPosition);
-
-	        bobcat.consumeBattery(battery);
-	        gui.removeImage((Bateria) tileMap.get(batteryPosition));
-	        tileMap.remove(batteryPosition);
-	        gui.addImage(new Chao(batteryPosition));
-	    }
-
-	    bobcat.move(directionFromKey, tileMap);
+	
+	public void relocateObject(Point2D old, Point2D newP, GameElement g) {
+	    tileMap.remove(old); // Clear the old position
+	    tileMap.put(newP, g); // Update the tileMap with the existing Caixote in the new position
 	}
 	
-//	private void addTargetIfNull(List<Alvo> alvos) {
-//	    for (Alvo a : alvos) {
-//	        Point2D targetPosition = a.getPosition();
-//	        if (!(tileMap.get(targetPosition) instanceof Alvo || tileMap.get(targetPosition) instanceof Caixote)) {
-//	            tileMap.put(targetPosition, new Alvo(targetPosition));
-//	            System.out.println("Add um alvo");
-//	        }
-//	    }
-//	}
-	
+
 	private List<Alvo> loadAlvos() {
 	    List<Alvo> alvos = new ArrayList<>();
 	    for (GameElement ge : tileMap.values()) {
@@ -252,7 +233,13 @@ public class GameEngine implements Observer {
 	    }
 	    return alvos;
 	}
-
 	
+	public GameElement getGameElement(Point2D p) {
+		return tileMap.get(p);
+	}
+
+	public void removeElement(Point2D p) {
+		tileMap.remove(p);
+	}
 
 }

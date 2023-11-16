@@ -19,5 +19,6 @@ public class Alvo extends GameElement{
 		return 1;
 	}
 	
-
+	@Override
+	public boolean interact(GameElement g) {return true;}
 }
