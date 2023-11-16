@@ -45,5 +45,15 @@ public class Caixote extends GameElement implements Movable{
         return elementAtNewPosition == null || elementAtNewPosition instanceof Bateria || elementAtNewPosition instanceof Empilhadora || elementAtNewPosition instanceof Alvo;
     }
 	
-
+    @Override
+    public void interact() {
+    	Point2D pe = Empilhadora.INSTANCE.getPosition();
+    	Point2D p = getPosition();
+    	
+    	
+    }
+    
+    
+    
+    
 }
